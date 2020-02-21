@@ -2,26 +2,43 @@
 
 <h1>To Do List</h1>
 
+<h3>Completed Todos: @toDos.Count(toDo => toDo.IsComplete)</h3>
+<h3>Uncompleted Todos: @toDos.Count(toDo => !toDo.IsComplete)</h3>
+
 <div class="form-group">
   <input id="to-do-input" class="form-control" type="text" @bind="newToDo" />
 </div>
 <button class="btn btn-primary" @onclick="AddTodo">Add To Do</button>
 
-<ul class="list-group">
+<ul class="list-group list-group-flush">
   @foreach (var toDo in toDos) {
-    <li class="list-group-item">@toDo</li>
+    <li class="list-group-item">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <div class="input-group-text">
+            <input type="checkbox" @bind="toDo.IsComplete">
+          </div>
+        </div>
+      <input type="text" class="form-control" @bind="toDo.Title">
+      </div>
+    </li>
   }
 </ul>
 
 @code {
-  private List<string> toDos = new List<string>();
+  private List<singleToDo> toDos = new List<singleToDo>();
 
   private string newToDo;
 
   private void AddTodo() {
     if (!string.IsNullOrWhiteSpace(newToDo)) {
-      toDos.Add(newToDo);
+      toDos.Add(new singleToDo { Title = newToDo });
       newToDo = String.Empty;
     }
+  }
+
+  public class singleToDo {
+    public string Title { get; set; }
+    public bool IsComplete { get; set; }
   }
 }
