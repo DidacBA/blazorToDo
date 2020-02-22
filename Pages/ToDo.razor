@@ -2,42 +2,104 @@
 
 <h1>To Do List</h1>
 
-<h3>Completed Todos: @toDos.Count(toDo => toDo.IsComplete)</h3>
-<h3>Uncompleted Todos: @toDos.Count(toDo => !toDo.IsComplete)</h3>
+<div class="alert alert-success @AlertClass" role="alert">
+  To Do Title changed to: <span>@titleChanged</span>
+</div>
 
 <div class="form-group">
   <input id="to-do-input" class="form-control" type="text" @bind="newToDo" />
 </div>
-<button class="btn btn-primary" @onclick="AddTodo">Add To Do</button>
+<button class="btn btn-primary" @onclick="AddToDo">Add To Do</button>
 
-<ul class="list-group list-group-flush">
-  @foreach (var toDo in toDos) {
-    <li class="list-group-item">
-      <div class="input-group mb-3">
-        <div class="input-group-prepend">
-          <div class="input-group-text">
-            <input type="checkbox" @bind="toDo.IsComplete">
-          </div>
-        </div>
-      <input type="text" class="form-control" @bind="toDo.Title">
-      </div>
-    </li>
-  }
-</ul>
+<div class="container mt-3">
+  <div class="row">
+    <div class="col-md-6">
+      <h3>Uncompleted: @toDos.Count(toDo => !toDo.IsComplete)</h3>
+      <ul class="list-group list-group-flush mt-3">
+        @foreach (var toDo in toDos) {
+          @if (toDo.IsComplete == false) {
+            <li class="list-group-item">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">
+                    <input type="checkbox" @bind="toDo.IsComplete">
+                  </div>
+                </div>
+                <input type="text" class="form-control" @bind="toDo.Title" @onfocusout="(() => CheckTitleChange(toDo.Id))">
+                <div class="input-group-append">
+                  <button class="btn btn-danger" type="button" @onclick="(() => DeleteToDo(toDo.Id))">Delete</button>
+                </div>
+              </div>
+            </li>
+          }
+        }
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <h3>Completed: @toDos.Count(toDo => toDo.IsComplete)</h3>
+      <ul class="list-group list-group-flush mt-3">
+        @foreach (var toDo in toDos) {
+          @if (toDo.IsComplete == true) {
+            <li class="list-group-item" id="@toDo.Id">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">
+                    <input type="checkbox" @bind="toDo.IsComplete">
+                  </div>
+                </div>
+                <input type="text" class="form-control" @bind="toDo.Title">
+                <div class="input-group-append">
+                  <button class="btn btn-danger" type="button" @onclick="(() => DeleteToDo(toDo.Id))">Delete</button>
+                </div>
+              </div>
+            </li>
+          }
+        }
+      </ul>
+    </div>
+  </div>
+</div>
+
 
 @code {
-  private List<singleToDo> toDos = new List<singleToDo>();
+  private List<SingleToDo> toDos = new List<SingleToDo>();
 
   private string newToDo;
 
-  private void AddTodo() {
+  private int idCounter = 0;
+
+  private string titleChanged;
+
+  private string AlertClass;
+
+  protected override void OnInitialized() {
+    AlertClass = "alert-no-show";
+  }
+
+  private void AddToDo() {
     if (!string.IsNullOrWhiteSpace(newToDo)) {
-      toDos.Add(new singleToDo { Title = newToDo });
+      toDos.Add(new SingleToDo { Id = idCounter, Title = newToDo });
+      idCounter++;
       newToDo = String.Empty;
     }
   }
 
-  public class singleToDo {
+  private SingleToDo FindById(int Id) {
+    SingleToDo toDo = toDos.Find(toDo => toDo.Id == Id);
+    return toDo;
+  }
+  private void DeleteToDo(int Id) {
+    SingleToDo toDoToRemove = FindById(Id);
+    toDos.Remove(toDoToRemove);
+  }
+
+  private void CheckTitleChange(int Id) {
+    SingleToDo toDoChanged = FindById(Id);
+    titleChanged = toDoChanged.Title;
+    AlertClass = "alert-show";
+  }
+  public class SingleToDo {
+    public int Id { get; set; }
     public string Title { get; set; }
     public bool IsComplete { get; set; }
   }

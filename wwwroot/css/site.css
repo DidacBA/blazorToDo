@@ -181,3 +181,11 @@ app {
         display: block;
     }
 }
+
+.alert-no-show {
+  display: none;
+}
+
+.alert-show {
+  display: block;
+}
