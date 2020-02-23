@@ -1,4 +1,5 @@
 @page "/todo"
+@using System.Threading;
 
 <h1>To Do List</h1>
 
@@ -40,14 +41,14 @@
       <ul class="list-group list-group-flush mt-3">
         @foreach (var toDo in toDos) {
           @if (toDo.IsComplete == true) {
-            <li class="list-group-item" id="@toDo.Id">
+            <li class="list-group-item">
               <div class="input-group">
                 <div class="input-group-prepend">
                   <div class="input-group-text">
                     <input type="checkbox" @bind="toDo.IsComplete">
                   </div>
                 </div>
-                <input type="text" class="form-control" @bind="toDo.Title">
+                <input type="text" class="form-control" @bind="toDo.Title" @onfocusout="(() => CheckTitleChange(toDo.Id))">
                 <div class="input-group-append">
                   <button class="btn btn-danger" type="button" @onclick="(() => DeleteToDo(toDo.Id))">Delete</button>
                 </div>
@@ -60,7 +61,6 @@
   </div>
 </div>
 
-
 @code {
   private List<SingleToDo> toDos = new List<SingleToDo>();
 
@@ -69,12 +69,9 @@
   private int idCounter = 0;
 
   private string titleChanged;
+  private string AlertClass { get; set; } = "alert-no-show";
 
-  private string AlertClass;
-
-  protected override void OnInitialized() {
-    AlertClass = "alert-no-show";
-  }
+  private int Count { get; set; } = 5;
 
   private void AddToDo() {
     if (!string.IsNullOrWhiteSpace(newToDo)) {
@@ -83,7 +80,6 @@
       newToDo = String.Empty;
     }
   }
-
   private SingleToDo FindById(int Id) {
     SingleToDo toDo = toDos.Find(toDo => toDo.Id == Id);
     return toDo;
@@ -92,12 +88,26 @@
     SingleToDo toDoToRemove = FindById(Id);
     toDos.Remove(toDoToRemove);
   }
-
   private void CheckTitleChange(int Id) {
     SingleToDo toDoChanged = FindById(Id);
     titleChanged = toDoChanged.Title;
     AlertClass = "alert-show";
   }
+  private void HideAlert() {
+    AlertClass = "alert-no-show";
+  }
+
+  private void StartCountdown() {
+    var timer = new Timer(new TimerCallback(_ => {
+      if (Count > 0) {
+        Count--;
+      } else if (Count == 0) {
+        this.HideAlert();
+        this.StateHasChanged();
+      }
+    }), null, 1000, 1000);
+  }
+
   public class SingleToDo {
     public int Id { get; set; }
     public string Title { get; set; }
